@@ -29,10 +29,10 @@ define('scalejs.layout-cssgrid-splitter/splitter', [
         return function (e) {
             var dx = e.gesture.deltaX,
                 //dy = e.gesture.deltaY,
-                msGridColumn = element.currentStyle['-ms-grid-column'] || element.getAttribute('data-ms-grid-column'),
+                msGridColumn = (element.currentStyle && element.currentStyle['-ms-grid-column']) || element.getAttribute('data-ms-grid-column'),
                 msGridColumnIndex,
                 parent = element.parentNode,
-                msGridColumns = parent.currentStyle['-ms-grid-columns'] || parent.getAttribute('data-ms-grid-columns'),
+                msGridColumns = (parent.currentStyle && parent.currentStyle['-ms-grid-columns']) || parent.getAttribute('data-ms-grid-columns'),
                 columns;
 
             function updateColumns() {
