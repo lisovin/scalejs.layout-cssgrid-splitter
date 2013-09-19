@@ -8,7 +8,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="Properties\build.rjs" />
-    <Content Include="Properties\scalejs.layout-cssgrid-splitter.nuspec" />
+    <Content Include="Properties\scalejs.layout-cssgrid-splitter.nuspec">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="scalejs.layout-cssgrid-splitter.js" />
     <Content Include="scalejs.layout-cssgrid-splitter\splitter.js" />
     <Content Include="Scripts\scalejs-0.3.0.0.js" />
