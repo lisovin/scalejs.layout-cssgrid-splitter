@@ -1,0 +1,7 @@
+
+/packages
+/.nuget
+*.suo
+/scalejs.layout-cssgrid-splitter/js
+/scalejs.layout-cssgrid-splitter/obj
+/scalejs.layout-cssgrid-splitter/scalejs.layout-cssgrid-splitter.csproj.user
