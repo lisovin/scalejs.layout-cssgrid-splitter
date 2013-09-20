@@ -7,6 +7,7 @@ define('scalejs.layout-cssgrid-splitter/splitter', [
     hammer
 ) {
     'use strict';
+
     /*
     function getStyle(element, cssRule) {
         var value;
@@ -24,20 +25,21 @@ define('scalejs.layout-cssgrid-splitter/splitter', [
     }*/
 
     function handleDrag(element) {
-        var dragStartColumns;
+        var resizer;
 
-        return function (e) {
-            var dx = e.gesture.deltaX,
-                //dy = e.gesture.deltaY,
-                msGridColumn = (element.currentStyle && element.currentStyle['-ms-grid-column']) || element.getAttribute('data-ms-grid-column'),
-                msGridColumnIndex,
-                parent = element.parentNode,
-                msGridColumns = (parent.currentStyle && parent.currentStyle['-ms-grid-columns']) || parent.getAttribute('data-ms-grid-columns'),
-                columns;
+        function createResizer(rowOrColumn, deltaProperty, e) {
+            var position = (element.currentStyle && element.currentStyle['-ms-grid-' + rowOrColumn]) ||
+                            element.getAttribute('data-ms-grid-' + rowOrColumn),
+                grid = element.parentNode,
+                definition = (grid.currentStyle && grid.currentStyle['-ms-grid-' + rowOrColumn + 's']) ||
+                              grid.getAttribute('data-ms-grid-' + rowOrColumn + 's'),
+                index,
+                dragStartDefinitions;
 
-            function updateColumns() {
-                var left = dragStartColumns[msGridColumnIndex - 1],
-                    right = dragStartColumns[msGridColumnIndex + 1];
+            function updateDefinitions(delta) {
+                var prev = dragStartDefinitions[index - 1],
+                    next = dragStartDefinitions[index + 1],
+                    definitions = dragStartDefinitions.slice();
 
                 function resize(measure, delta) {
                     //console.log('--->resize: ' + left + ' by ' + delta);
@@ -49,52 +51,70 @@ define('scalejs.layout-cssgrid-splitter/splitter', [
                     return measure;
                 }
 
-                if (!left.match(/fr/i)) {
-                    columns[msGridColumnIndex - 1] = resize(left, dx);
-                    return true;
+                if (!prev.match(/fr/i)) {
+                    definitions[index - 1] = resize(prev, delta);
+                    return definitions;
                 }
 
-                if (!right.match(/fr/i)) {
-                    columns[msGridColumnIndex + 1] = resize(left, -dx);
-                    return true;
+                if (!next.match(/fr/i)) {
+                    definitions[index + 1] = resize(next, -delta);
+                    return definitions;
                 }
-
-                return false;
             }
 
-            if (!msGridColumns) {
+            function resize(e) {
+                var newDefinitions = updateDefinitions(e.gesture[deltaProperty]);
+                if (newDefinitions) {
+                    element.parentNode.setAttribute('style', '-ms-grid-' + rowOrColumn + 's: ' + newDefinitions.join(' '));
+                    core.reactive.messageBus.notify('css-grid-layout');
+                }
+            }
+
+            function stop(e) {
+                resize(e);
+            }
+
+            if (!definition) {
                 return;
             }
 
             try {
-                msGridColumnIndex = parseInt(msGridColumn, 10) - 1;
+                index = parseInt(position, 10) - 1;
             } catch (ex) {
                 return;
             }
 
-            columns = msGridColumns.match(/\S+/g);
-            //console.log(type, dx, dy, parent.id, parent.getAttribute('style'), columns);
+            dragStartDefinitions = definition.match(/\S+/g);
 
+            resize(e);
+
+            return {
+                resize: resize,
+                stop: stop
+            };
+        }
+
+        function startResizing(e) {
+            return element.offsetWidth > element.offsetHeight
+                ? createResizer('row', 'deltaY', e)
+                : createResizer('column', 'deltaX', e);
+        }
+
+        return function (e) {
             switch (e.type) {
             case 'dragstart':
-                dragStartColumns = columns;
+                resizer = startResizing(e);
                 break;
             case 'drag':
-                if (updateColumns()) {
-                    element.parentNode.setAttribute('style', '-ms-grid-columns: ' + columns.join(' '));
-                    core.reactive.messageBus.notify('css-grid-layout');
-                }
+                resizer.resize(e);
                 break;
             case 'dragend':
-                if (updateColumns()) {
-                    //console.log('--->resized: ' + columns);
-                    element.parentNode.setAttribute('style', '-ms-grid-columns: ' + columns.join(' '));
-                    core.reactive.messageBus.notify('css-grid-layout');
-                }
+                resizer.stop(e);
                 break;
             }
         };
     }
+
     /*jslint unparam:true*/
     function init(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
         //element.setAttribute('data-ms-grid-column', '2');
