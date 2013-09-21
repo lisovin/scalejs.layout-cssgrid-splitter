@@ -66,7 +66,9 @@ define('scalejs.layout-cssgrid-splitter/splitter', [
                 var newDefinitions = updateDefinitions(e.gesture[deltaProperty]);
                 if (newDefinitions) {
                     element.parentNode.setAttribute('style', '-ms-grid-' + rowOrColumn + 's: ' + newDefinitions.join(' '));
-                    core.reactive.messageBus.notify('css-grid-layout');
+                    if (core.layout.cssGrid) {
+                        core.layout.cssGrid.layout();
+                    }
                 }
             }
 
