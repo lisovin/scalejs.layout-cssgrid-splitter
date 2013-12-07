@@ -8,22 +8,6 @@ define('scalejs.layout-cssgrid-splitter/splitter', [
 ) {
     'use strict';
 
-    /*
-    function getStyle(element, cssRule) {
-        var value;
-
-        if (document.defaultView && document.defaultView.getComputedStyle) {
-            value = document.defaultView.getComputedStyle(element, "").getPropertyValue(cssRule);
-        } else if (element.currentStyle) {
-            cssRule = cssRule.replace(/\-(\w)/g, function (match, p) {
-                return p.toUpperCase();
-            });
-            value = element.currentStyle[cssRule];
-        }
-
-        return value;
-    }*/
-
     function handleDrag(element) {
         var resizer;
 
@@ -66,8 +50,8 @@ define('scalejs.layout-cssgrid-splitter/splitter', [
                 var newDefinitions = updateDefinitions(e.gesture[deltaProperty]);
                 if (newDefinitions) {
                     element.parentNode.setAttribute('style', '-ms-grid-' + rowOrColumn + 's: ' + newDefinitions.join(' '));
-                    if (core.layout.cssGrid) {
-                        core.layout.cssGrid.layout();
+                    if (core.layout && core.layout.invalidate) {
+                        core.layout.invalidate();
                     }
                 }
             }
