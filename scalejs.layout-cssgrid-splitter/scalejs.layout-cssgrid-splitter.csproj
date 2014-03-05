@@ -5,6 +5,8 @@
     <OutputType>Library</OutputType>
     <OutputPath>js</OutputPath>
     <JSLintSkip>\Scripts\</JSLintSkip>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <ItemGroup>
     <Content Include="Properties\build.rjs" />
@@ -13,8 +15,12 @@
     </Content>
     <Content Include="scalejs.layout-cssgrid-splitter.js" />
     <Content Include="scalejs.layout-cssgrid-splitter\splitter.js" />
+    <Content Include="Scripts\CSS.supports.js" />
+    <Content Include="Scripts\cssparser.js" />
     <Content Include="Scripts\scalejs-0.3.0.0.js" />
     <Content Include="Scripts\scalejs-0.3.0.0.min.js" />
+    <Content Include="Scripts\scalejs.layout-cssgrid-0.2.7.56.js" />
+    <Content Include="Scripts\scalejs.layout-cssgrid-0.2.7.56.min.js" />
     <Content Include="Scripts\_scalejs.intellisense.js" />
     <Content Include="tools\install.ps1" />
     <Content Include="tools\uninstall.ps1" />
