@@ -50,8 +50,10 @@ define('scalejs.layout-cssgrid-splitter/splitter', [
                 dragSplitterDiv.style.top = element.offsetTop + 'px';
                 dragSplitterDiv.style.left = element.offsetLeft + 'px';
                 dragSplitterPos = {
-                    top: element.offsetTop + 'px',
-                    left: element.offsetLeft + 'px'
+                    topPx: element.offsetTop + 'px',
+                    leftPx: element.offsetLeft + 'px',
+                    startTop: element.offsetTop,
+                    startLeft: element.offsetLeft
                 };
                 dragSplitterDiv.style.backgroundColor = bgCol;
                 document.body.appendChild(dragSplitterDiv);
@@ -73,10 +75,10 @@ define('scalejs.layout-cssgrid-splitter/splitter', [
 
                         if (mode === 'final') {
                             if (deltaProperty === 'deltaX') {
-                                dragSplitterPos.left = changed_measure;
+                                dragSplitterPos.leftPx = (dragSplitterPos.startLeft + delta) + 'px';
                             }
                             if (deltaProperty === 'deltaY') {
-                                dragSplitterPos.top = changed_measure;
+                                dragSplitterPos.topPx = (dragSplitterPos.startTop + delta) + 'px';
                             }
                         }
 
@@ -109,8 +111,8 @@ define('scalejs.layout-cssgrid-splitter/splitter', [
                     }
 
                     if (mode === 'final') {
-                        dragSplitterDiv.style.left = dragSplitterPos.left;
-                        dragSplitterDiv.style.top = dragSplitterPos.top;
+                        dragSplitterDiv.style.left = dragSplitterPos.leftPx;
+                        dragSplitterDiv.style.top = dragSplitterPos.topPx;
                     }
                 }
             }
