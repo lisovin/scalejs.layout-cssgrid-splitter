@@ -22,8 +22,9 @@ define('scalejs.layout-cssgrid-splitter/splitter', [
     </div>
     */
 
-    function handleDrag(element, mode) {
-        var resizer,
+    function handleDrag(element, value) {
+        var mode = value.mode,
+            resizer,
             bgCol;
 
         function createResizer(rowOrColumn, deltaProperty, e) {
@@ -97,6 +98,9 @@ define('scalejs.layout-cssgrid-splitter/splitter', [
                     return measure;
                 }
 
+
+
+
                 if (prev.match(/fr/i) && next.match(/fr/i)) {
                     console.log('Splitters placed between two "fr" sized tracks are unsupported');
                     return definitions;
@@ -114,7 +118,7 @@ define('scalejs.layout-cssgrid-splitter/splitter', [
 
                 if (prev.match(/fr/i) && !next.match(/fr/i)) {
                     if (next === 'auto') {
-                        dragStartDefinitions[index + 1] = grid.attributes['data-grid-calculated-' + rowOrColumn + 's'].textContent.split(' ')[index - 1];
+                        dragStartDefinitions[index + 1] = grid.attributes['data-grid-calculated-' + rowOrColumn + 's'].textContent.split(' ')[index + 1];
                     }
 
                     definitions[index + 1] = resize(next, -delta);
@@ -215,7 +219,27 @@ define('scalejs.layout-cssgrid-splitter/splitter', [
     }
     /*jslint unparam:false*/
 
+
+    function update(element, valueAccessor) {
+        var rowOrColumn = element.offsetWidth > element.offsetHeight ? 'row' : 'column',
+            forceNextSize = valueAccessor.nextSize,
+            forcePrevSize = valueAccessor.prevSize,
+            splitterTrack = (element.currentStyle && element.currentStyle['-ms-grid-' + rowOrColumn]) ||
+                            core.layout.utils.safeGetStyle(element, '-ms-grid-' + rowOrColumn) ||
+                            undefined,
+            nextTrack = parseInt(splitterTrack, 10) + 1,
+            prevTrack = parseInt(splitterTrack, 10) - 1;
+
+        if (forceNextSize !== undefined) {
+            core.layout.utils.setTrackSize(element.parentNode, rowOrColumn, nextTrack, forceNextSize);
+        }
+        if (forceNextSize !== undefined) {
+            core.layout.utils.setTrackSize(element.parentNode, rowOrColumn, prevTrack, forcePrevSize);
+        }
+    }
+
     return {
-        init: init
+        init: init,
+        update: update
     };
 });
