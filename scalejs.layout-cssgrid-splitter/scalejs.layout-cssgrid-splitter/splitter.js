@@ -221,20 +221,21 @@ define('scalejs.layout-cssgrid-splitter/splitter', [
 
 
     function update(element, valueAccessor) {
-        var rowOrColumn = element.offsetWidth > element.offsetHeight ? 'row' : 'column',
-            forceNextSize = valueAccessor.nextSize,
-            forcePrevSize = valueAccessor.prevSize,
+        var rowOrColumn = parseInt(element.style.width, 10) > parseInt(element.offsetHeight, 10) ? 'row' : 'column',
+            value = valueAccessor(),
+            nextSize = value.nextSize,
+            prevSize = value.prevSize,
             splitterTrack = (element.currentStyle && element.currentStyle['-ms-grid-' + rowOrColumn]) ||
                             core.layout.utils.safeGetStyle(element, '-ms-grid-' + rowOrColumn) ||
                             undefined,
             nextTrack = parseInt(splitterTrack, 10) + 1,
             prevTrack = parseInt(splitterTrack, 10) - 1;
 
-        if (forceNextSize !== undefined) {
-            core.layout.utils.setTrackSize(element.parentNode, rowOrColumn, nextTrack, forceNextSize);
+        if (nextSize !== undefined) {
+            core.layout.utils.setTrackSize(element.parentNode, rowOrColumn, nextTrack, nextSize);
         }
-        if (forceNextSize !== undefined) {
-            core.layout.utils.setTrackSize(element.parentNode, rowOrColumn, prevTrack, forcePrevSize);
+        if (prevSize !== undefined) {
+            core.layout.utils.setTrackSize(element.parentNode, rowOrColumn, prevTrack, prevSize);
         }
     }
 
