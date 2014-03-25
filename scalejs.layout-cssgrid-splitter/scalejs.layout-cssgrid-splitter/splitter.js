@@ -233,9 +233,11 @@ define('scalejs.layout-cssgrid-splitter/splitter', [
 
         if (nextSize !== undefined) {
             core.layout.utils.setTrackSize(element.parentNode, rowOrColumn, nextTrack, nextSize);
+            core.layout.invalidate();
         }
         if (prevSize !== undefined) {
             core.layout.utils.setTrackSize(element.parentNode, rowOrColumn, prevTrack, prevSize);
+            core.layout.invalidate();
         }
     }
 
