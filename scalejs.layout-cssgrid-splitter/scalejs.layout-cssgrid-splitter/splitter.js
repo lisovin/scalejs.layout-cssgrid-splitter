@@ -108,7 +108,7 @@ define('scalejs.layout-cssgrid-splitter/splitter', [
 
                 if (!prev.match(/fr/i) && next.match(/fr/i)) {
                     if (prev === 'auto') {
-                        dragStartDefinitions[index - 1] = grid.attributes['data-grid-calculated-' + rowOrColumn + 's'].textContent.split(' ')[index - 1];
+                        dragStartDefinitions[index - 1] = grid.attributes['data-grid-computed-' + rowOrColumn + 's'].textContent.split(' ')[index - 1];
                     }
 
                     definitions[index - 1] = resize(prev, delta);
@@ -118,7 +118,7 @@ define('scalejs.layout-cssgrid-splitter/splitter', [
 
                 if (prev.match(/fr/i) && !next.match(/fr/i)) {
                     if (next === 'auto') {
-                        dragStartDefinitions[index + 1] = grid.attributes['data-grid-calculated-' + rowOrColumn + 's'].textContent.split(' ')[index + 1];
+                        dragStartDefinitions[index + 1] = grid.attributes['data-grid-computed-' + rowOrColumn + 's'].textContent.split(' ')[index + 1];
                     }
 
                     definitions[index + 1] = resize(next, -delta);
@@ -128,10 +128,10 @@ define('scalejs.layout-cssgrid-splitter/splitter', [
 
                 if (!prev.match(/fr/i) && !next.match(/fr/i)) {
                     if (prev === 'auto') {
-                        dragStartDefinitions[index - 1] = grid.attributes['data-grid-calculated-' + rowOrColumn + 's'].textContent.split(' ')[index - 1];
+                        dragStartDefinitions[index - 1] = grid.attributes['data-grid-computed-' + rowOrColumn + 's'].textContent.split(' ')[index - 1];
                     }
                     if (next === 'auto') {
-                        dragStartDefinitions[index + 1] = grid.attributes['data-grid-calculated-' + rowOrColumn + 's'].textContent.split(' ')[index - 1];
+                        dragStartDefinitions[index + 1] = grid.attributes['data-grid-computed-' + rowOrColumn + 's'].textContent.split(' ')[index - 1];
                     }
 
                     definitions[index - 1] = resize(prev, delta);
@@ -233,11 +233,11 @@ define('scalejs.layout-cssgrid-splitter/splitter', [
 
         if (nextSize !== undefined) {
             core.layout.utils.setTrackSize(element.parentNode, rowOrColumn, nextTrack, nextSize);
-            core.layout.invalidate();
+            setTimeout(function () { core.layout.invalidate(); }, 0);
         }
         if (prevSize !== undefined) {
             core.layout.utils.setTrackSize(element.parentNode, rowOrColumn, prevTrack, prevSize);
-            core.layout.invalidate();
+            setTimeout(function () { core.layout.invalidate(); }, 0);
         }
     }
 
