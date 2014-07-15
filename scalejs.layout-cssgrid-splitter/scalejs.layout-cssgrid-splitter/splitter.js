@@ -74,7 +74,7 @@ define('scalejs.layout-cssgrid-splitter/splitter', [
                     var value = /(\d+)/.exec(measure),
                         changed_measure;
                     if (value) {
-                        changed_measure = (Math.max(parseInt(value, 10) + delta, 0)) + 'px';
+                        changed_measure = (Math.max(parseInt(value, 10) + Math.floor(delta), 0)) + 'px';
 
                         if (mode === 'final') {
                             var dir;
