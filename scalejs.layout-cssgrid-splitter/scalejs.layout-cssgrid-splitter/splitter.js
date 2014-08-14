@@ -22,8 +22,9 @@ define('scalejs.layout-cssgrid-splitter/splitter', [
     </div>
     */
 
-    function handleDrag(element, mode) {
-        var resizer,
+    function handleDrag(element, value) {
+        var mode = value.mode,
+            resizer,
             bgCol;
 
         function createResizer(rowOrColumn, deltaProperty, e) {
@@ -37,7 +38,8 @@ define('scalejs.layout-cssgrid-splitter/splitter', [
                 index,
                 dragStartDefinitions,
                 dragSplitterPos,
-                dragSplitterDiv;
+                dragSplitterDiv,
+                adjacentDivSide;
 
 
             if (mode === 'final') {
@@ -66,19 +68,27 @@ define('scalejs.layout-cssgrid-splitter/splitter', [
                     next = dragStartDefinitions[index + 1],
                     definitions = dragStartDefinitions.slice();
 
+
                 function resize(measure, delta) {
                     //console.log('--->resize: ' + left + ' by ' + delta);
                     var value = /(\d+)/.exec(measure),
                         changed_measure;
                     if (value) {
-                        changed_measure = (Math.max(parseInt(value, 10) + delta, 0)) + 'px';
+                        changed_measure = (Math.max(parseInt(value, 10) + Math.floor(delta), 0)) + 'px';
 
                         if (mode === 'final') {
+                            var dir;
+                            if (adjacentDivSide === 'prev') {
+                                dir = 1;
+                            } else if (adjacentDivSide === 'next') {
+                                dir = -1;
+                            }
+
                             if (deltaProperty === 'deltaX') {
-                                dragSplitterPos.leftPx = (dragSplitterPos.startLeft + delta) + 'px';
+                                dragSplitterPos.leftPx = (dragSplitterPos.startLeft + dir * delta) + 'px';
                             }
                             if (deltaProperty === 'deltaY') {
-                                dragSplitterPos.topPx = (dragSplitterPos.startTop + delta) + 'px';
+                                dragSplitterPos.topPx = (dragSplitterPos.startTop + dir * delta) + 'px';
                             }
                         }
 
@@ -88,13 +98,45 @@ define('scalejs.layout-cssgrid-splitter/splitter', [
                     return measure;
                 }
 
-                if (!prev.match(/fr/i)) {
-                    definitions[index - 1] = resize(prev, delta);
+
+
+
+                if (prev.match(/fr/i) && next.match(/fr/i)) {
+                    console.log('Splitters placed between two "fr" sized tracks are unsupported');
                     return definitions;
                 }
 
-                if (!next.match(/fr/i)) {
+                if (!prev.match(/fr/i) && next.match(/fr/i)) {
+                    if (prev === 'auto') {
+                        dragStartDefinitions[index - 1] = grid.attributes['data-grid-computed-' + rowOrColumn + 's'].textContent.split(' ')[index - 1];
+                    }
+
+                    definitions[index - 1] = resize(prev, delta);
+                    adjacentDivSide = 'prev';
+                    return definitions;
+                }
+
+                if (prev.match(/fr/i) && !next.match(/fr/i)) {
+                    if (next === 'auto') {
+                        dragStartDefinitions[index + 1] = grid.attributes['data-grid-computed-' + rowOrColumn + 's'].textContent.split(' ')[index + 1];
+                    }
+
                     definitions[index + 1] = resize(next, -delta);
+                    adjacentDivSide = 'next';
+                    return definitions;
+                }
+
+                if (!prev.match(/fr/i) && !next.match(/fr/i)) {
+                    if (prev === 'auto') {
+                        dragStartDefinitions[index - 1] = grid.attributes['data-grid-computed-' + rowOrColumn + 's'].textContent.split(' ')[index - 1];
+                    }
+                    if (next === 'auto') {
+                        dragStartDefinitions[index + 1] = grid.attributes['data-grid-computed-' + rowOrColumn + 's'].textContent.split(' ')[index - 1];
+                    }
+
+                    definitions[index - 1] = resize(prev, delta);
+                    definitions[index + 1] = resize(next, -delta);
+                    adjacentDivSide = 'next';
                     return definitions;
                 }
             }
@@ -102,6 +144,7 @@ define('scalejs.layout-cssgrid-splitter/splitter', [
             function resize(e) {
                 var newDefinitions = updateDefinitions(e.gesture[deltaProperty], deltaProperty),
                     newDef;
+
                 if (newDefinitions) {
                     newDef = newDefinitions.join(' ');
                     core.layout.utils.safeSetStyle(element.parentNode, '-ms-grid-' + rowOrColumn + 's', newDef);
@@ -152,32 +195,76 @@ define('scalejs.layout-cssgrid-splitter/splitter', [
         }
 
         return function (e) {
+            
+
+
             switch (e.type) {
-            case 'touch':
-                bgCol = getComputedStyle(element).getPropertyValue('background-color');
-                break;
-            case 'dragstart':
-                resizer = startResizing(e);
-                break;
-            case 'drag':
-                resizer.resize(e);
-                break;
-            case 'dragend':
-                resizer.stop(e);
-                break;
+                case 'touch':
+                    bgCol = getComputedStyle(element).getPropertyValue('background-color');
+                    break;
+                case 'dragstart':
+                    if (e.gesture === undefined) {
+                        break;
+                    }
+                    resizer = startResizing(e);
+                    break;
+                case 'drag':
+                    if (e.gesture === undefined) {
+                        break;
+                    }
+                    resizer.resize(e);
+                    break;
+                case 'dragend':
+                    if (e.gesture === undefined) {
+                        break;
+                    }
+                    resizer.stop(e);
+                    break;
             }
         };
     }
 
     /*jslint unparam:true*/
     function init(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
-        //element.setAttribute('data-ms-grid-column', '2');
-        //element.parentNode.setAttribute('data-ms-grid-columns', 'auto 50px 1fr 1fr');
         hammer(element).on('dragstart drag dragend touch', handleDrag(element, valueAccessor()));
     }
     /*jslint unparam:false*/
 
+
+    function update(element, valueAccessor) {
+        var rowOrColumn = parseInt(element.style.width, 10) > parseInt(element.offsetHeight, 10) ? 'row' : 'column',
+            value = valueAccessor(),
+            nextSize = value.nextSize,
+            prevSize = value.prevSize,
+            splitterTrack = (element.currentStyle && element.currentStyle['-ms-grid-' + rowOrColumn]) ||
+                            core.layout.utils.safeGetStyle(element, '-ms-grid-' + rowOrColumn) ||
+                            undefined,
+            nextTrack,
+            prevTrack;
+
+        //splitterTrack will be undefined in non-ie browsers when the elem doesnt have an inline style yet (before any invalidate, or if it isnt in a grid at all)
+
+        if (splitterTrack) {
+            nextTrack = parseInt(splitterTrack, 10) + 1,
+            prevTrack = parseInt(splitterTrack, 10) - 1;
+
+            if (nextSize !== undefined) {
+                core.layout.utils.setTrackSize(element.parentNode, rowOrColumn, nextTrack, nextSize);
+                setTimeout(function () { core.layout.invalidate(); }, 0);
+            }
+            if (prevSize !== undefined) {
+                core.layout.utils.setTrackSize(element.parentNode, rowOrColumn, prevTrack, prevSize);
+                setTimeout(function () { core.layout.invalidate(); }, 0);
+            }
+        } else {
+            console.log('Splitter tries to resize tracks on', element, 'but it doesnt have any tracks on its style. If this appears repeatedly, you are using splitters incorrectly.');
+            //This will appear once, even when using splitters correctly (because your splitter may get bound before the elem has grid-related styles.
+            //If it appears repeatedly times for the same splitter/element, you probably bound a splitter to an element that isn't in a grid.
+        }
+    }
+
     return {
-        init: init
+        init: init,
+        update: update
     };
 });
