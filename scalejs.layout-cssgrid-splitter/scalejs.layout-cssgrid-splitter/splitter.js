@@ -239,16 +239,27 @@ define('scalejs.layout-cssgrid-splitter/splitter', [
             splitterTrack = (element.currentStyle && element.currentStyle['-ms-grid-' + rowOrColumn]) ||
                             core.layout.utils.safeGetStyle(element, '-ms-grid-' + rowOrColumn) ||
                             undefined,
+            nextTrack,
+            prevTrack;
+
+        //splitterTrack will be undefined in non-ie browsers when the elem doesnt have an inline style yet (before any invalidate, or if it isnt in a grid at all)
+
+        if (splitterTrack) {
             nextTrack = parseInt(splitterTrack, 10) + 1,
             prevTrack = parseInt(splitterTrack, 10) - 1;
 
-        if (nextSize !== undefined) {
-            core.layout.utils.setTrackSize(element.parentNode, rowOrColumn, nextTrack, nextSize);
-            setTimeout(function () { core.layout.invalidate(); }, 0);
-        }
-        if (prevSize !== undefined) {
-            core.layout.utils.setTrackSize(element.parentNode, rowOrColumn, prevTrack, prevSize);
-            setTimeout(function () { core.layout.invalidate(); }, 0);
+            if (nextSize !== undefined) {
+                core.layout.utils.setTrackSize(element.parentNode, rowOrColumn, nextTrack, nextSize);
+                setTimeout(function () { core.layout.invalidate(); }, 0);
+            }
+            if (prevSize !== undefined) {
+                core.layout.utils.setTrackSize(element.parentNode, rowOrColumn, prevTrack, prevSize);
+                setTimeout(function () { core.layout.invalidate(); }, 0);
+            }
+        } else {
+            console.log('Splitter tries to resize tracks on', element, 'but it doesnt have any tracks on its style. If this appears repeatedly, you are using splitters incorrectly.');
+            //This will appear once, even when using splitters correctly (because your splitter may get bound before the elem has grid-related styles.
+            //If it appears repeatedly times for the same splitter/element, you probably bound a splitter to an element that isn't in a grid.
         }
     }
 
